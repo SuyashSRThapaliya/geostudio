@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    proxy: { "/api": "http://localhost:5000" },
+    // 127.0.0.1, not "localhost": Node 18+ may resolve localhost to IPv6 (::1) while Flask listens on IPv4.
+    proxy: { "/api": "http://127.0.0.1:5000" },
   },
 });
