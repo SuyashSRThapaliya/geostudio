@@ -1,0 +1,24 @@
+{
+  "schema": "correction_request/1.0",
+  "request_id": "cr_demo02",
+  "project_id": "prj_demo01",
+  "image_id": "img_demo01",
+  "location": {
+    "type": "polygon",
+    "pixel_vertices": [[280, 40], [280, 90], [330, 90], [330, 40]],
+    "map_vertices": [[500400.0, 4647200.0], [500900.0, 4647200.0], [500900.0, 4646700.0], [500400.0, 4646700.0]],
+    "crs": "EPSG:32615"
+  },
+  "original_prediction": {
+    "class_id": 3,
+    "class_name": "water",
+    "confidence": null
+  },
+  "model": { "model_id": "rf_prj_demo01", "model_version": "v2" },
+  "requested_action": "add_points",
+  "suggested_class": null,
+  "explanation": "Model has no confidence output. Dark patch classed as water may be shadow; Training should add more labeled examples of both classes in this area.",
+  "created_by": "verification:gavin",
+  "created_at": "2026-11-13T19:12:00+00:00",
+  "status": "open"
+}

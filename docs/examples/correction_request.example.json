@@ -1,0 +1,29 @@
+{
+  "schema": "correction_request/1.0",
+  "request_id": "cr_demo01",
+  "project_id": "prj_demo01",
+  "image_id": "img_demo01",
+  "location": {
+    "type": "point",
+    "pixel": { "row": 200, "col": 150 },
+    "pixel_id": 102550,
+    "map": { "x": 501505.0, "y": 4647995.0, "crs": "EPSG:32615" },
+    "point_id": null
+  },
+  "original_prediction": {
+    "class_id": 1,
+    "class_name": "vegetation",
+    "confidence": 0.58
+  },
+  "model": {
+    "model_id": "rf_prj_demo01",
+    "model_version": "v2",
+    "trained_at": "2026-11-12T21:10:00+00:00"
+  },
+  "requested_action": "relabel",
+  "suggested_class": { "class_id": 2, "class_name": "exposed_soil" },
+  "explanation": "Predicted vegetation but the pixel sits on bare soil next to the field boundary; NIR is low compared with nearby vegetation.",
+  "created_by": "verification:cesar",
+  "created_at": "2026-11-13T19:05:00+00:00",
+  "status": "open"
+}

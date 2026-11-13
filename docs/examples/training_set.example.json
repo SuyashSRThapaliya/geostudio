@@ -1,0 +1,246 @@
+{
+  "schema": "training_set/1.0",
+  "project_id": "prj_demo01",
+  "exported_at": "2026-11-13T18:00:00+00:00",
+  "image": {
+    "image_id": "img_demo01",
+    "filename": "sample_4band.tif",
+    "width": 512,
+    "height": 384,
+    "crs": "EPSG:32615",
+    "transform": [
+      10.0,
+      0.0,
+      500000.0,
+      0.0,
+      -10.0,
+      4650000.0
+    ],
+    "bands": [
+      {
+        "index": 1,
+        "name": "Red"
+      },
+      {
+        "index": 2,
+        "name": "Green"
+      },
+      {
+        "index": 3,
+        "name": "Blue"
+      },
+      {
+        "index": 4,
+        "name": "NIR"
+      }
+    ]
+  },
+  "classes": [
+    {
+      "class_id": 1,
+      "name": "vegetation",
+      "color": "#2e9e44"
+    },
+    {
+      "class_id": 2,
+      "name": "exposed_soil",
+      "color": "#b5651d"
+    },
+    {
+      "class_id": 3,
+      "name": "water",
+      "color": "#1f6feb"
+    },
+    {
+      "class_id": 4,
+      "name": "roof",
+      "color": "#c9302c"
+    }
+  ],
+  "examples": [
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pt_demo01",
+      "pixel_id": 61500,
+      "pixel": {
+        "row": 120,
+        "col": 60
+      },
+      "map": {
+        "x": 500605.0,
+        "y": 4648795.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 418
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 864
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 434
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4106
+        }
+      ],
+      "approval_status": "approved",
+      "source": "manual_point",
+      "created_at": "2026-11-13T17:51:00+00:00",
+      "created_by": "lumu"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pt_demo02",
+      "pixel_id": 46480,
+      "pixel": {
+        "row": 90,
+        "col": 400
+      },
+      "map": {
+        "x": 504005.0,
+        "y": 4649095.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 2,
+        "name": "exposed_soil"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 2671
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 2175
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 1466
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 2823
+        }
+      ],
+      "approval_status": "approved",
+      "source": "manual_point",
+      "created_at": "2026-11-13T17:52:00+00:00",
+      "created_by": "lumu"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pt_demo03",
+      "pixel_id": 153700,
+      "pixel": {
+        "row": 300,
+        "col": 100
+      },
+      "map": {
+        "x": 501005.0,
+        "y": 4646995.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 3,
+        "name": "water"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 301
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 513
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 746
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 153
+        }
+      ],
+      "approval_status": "approved",
+      "source": "manual_point",
+      "created_at": "2026-11-13T17:53:00+00:00",
+      "created_by": "lumu"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pt_demo04",
+      "pixel_id": 164260,
+      "pixel": {
+        "row": 320,
+        "col": 420
+      },
+      "map": {
+        "x": 504205.0,
+        "y": 4646795.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 4,
+        "name": "roof"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 3379
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 2974
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 2960
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 3306
+        }
+      ],
+      "approval_status": "approved",
+      "source": "manual_point",
+      "created_at": "2026-11-13T17:54:00+00:00",
+      "created_by": "lumu"
+    }
+  ]
+}

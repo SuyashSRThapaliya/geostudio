@@ -1,0 +1,134 @@
+[
+  {
+    "size": "512x384",
+    "file_mb": 1.1,
+    "raw_mb": 1.6,
+    "rasterio": {
+      "ok": true,
+      "open_metadata_ms": 0.9,
+      "read_all_ms": 6.9,
+      "preview_png_ms": 24.6,
+      "preview_png_kb": 411,
+      "pixel_lookup_ms": 2.6,
+      "reads_crs": true,
+      "band_names": [
+        "Red",
+        "Green",
+        "Blue",
+        "NIR"
+      ],
+      "shape": [
+        4,
+        384,
+        512
+      ],
+      "pixel_check": true
+    },
+    "tifffile": {
+      "ok": true,
+      "open_metadata_ms": 0.3,
+      "read_all_ms": 8.3,
+      "shape": [
+        384,
+        512,
+        4
+      ],
+      "reads_crs": true,
+      "crs_note": "raw GeoKey only (e.g. EPSG code); no pixel<->map transform helpers",
+      "layout": "rows,cols,bands (pixel-interleaved) - band axis differs from rasterio",
+      "pixel_check": true
+    },
+    "pillow": {
+      "ok": false,
+      "error": "UnidentifiedImageError: cannot identify image file '/home/claude/training-tool/experiments/_data/test_512x384.tif'"
+    }
+  },
+  {
+    "size": "2048x1536",
+    "file_mb": 18.2,
+    "raw_mb": 25.2,
+    "rasterio": {
+      "ok": true,
+      "open_metadata_ms": 0.9,
+      "read_all_ms": 76.4,
+      "preview_png_ms": 382.1,
+      "preview_png_kb": 6564,
+      "pixel_lookup_ms": 2.7,
+      "reads_crs": true,
+      "band_names": [
+        "Red",
+        "Green",
+        "Blue",
+        "NIR"
+      ],
+      "shape": [
+        4,
+        1536,
+        2048
+      ],
+      "pixel_check": true
+    },
+    "tifffile": {
+      "ok": true,
+      "open_metadata_ms": 0.2,
+      "read_all_ms": 120.2,
+      "shape": [
+        1536,
+        2048,
+        4
+      ],
+      "reads_crs": true,
+      "crs_note": "raw GeoKey only (e.g. EPSG code); no pixel<->map transform helpers",
+      "layout": "rows,cols,bands (pixel-interleaved) - band axis differs from rasterio",
+      "pixel_check": true
+    },
+    "pillow": {
+      "ok": false,
+      "error": "UnidentifiedImageError: cannot identify image file '/home/claude/training-tool/experiments/_data/test_2048x1536.tif'"
+    }
+  },
+  {
+    "size": "4096x4096",
+    "file_mb": 97.1,
+    "raw_mb": 134.2,
+    "rasterio": {
+      "ok": true,
+      "open_metadata_ms": 1.0,
+      "read_all_ms": 427.6,
+      "preview_png_ms": 796.5,
+      "preview_png_kb": 8752,
+      "pixel_lookup_ms": 2.8,
+      "reads_crs": true,
+      "band_names": [
+        "Red",
+        "Green",
+        "Blue",
+        "NIR"
+      ],
+      "shape": [
+        4,
+        4096,
+        4096
+      ],
+      "pixel_check": true
+    },
+    "tifffile": {
+      "ok": true,
+      "open_metadata_ms": 0.3,
+      "read_all_ms": 697.1,
+      "shape": [
+        4096,
+        4096,
+        4
+      ],
+      "reads_crs": true,
+      "crs_note": "raw GeoKey only (e.g. EPSG code); no pixel<->map transform helpers",
+      "layout": "rows,cols,bands (pixel-interleaved) - band axis differs from rasterio",
+      "pixel_check": true
+    },
+    "pillow": {
+      "ok": false,
+      "error": "UnidentifiedImageError: cannot identify image file '/home/claude/training-tool/experiments/_data/test_4096x4096.tif'"
+    }
+  }
+]

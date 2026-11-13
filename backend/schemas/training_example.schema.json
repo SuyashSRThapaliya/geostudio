@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "training_example.schema.json",
+  "title": "Training example (one labeled pixel)",
+  "type": "object",
+  "required": ["schema", "project_id", "image_id", "point_id", "pixel_id", "pixel", "class", "bands", "approval_status", "source"],
+  "properties": {
+    "schema": { "const": "training_example/1.0" },
+    "project_id": { "type": "string" },
+    "image_id": { "type": "string" },
+    "point_id": { "type": "string", "description": "Unique per labeled point; stable across exports so corrections can refer back to it." },
+    "pixel_id": { "type": "integer", "minimum": 0, "description": "row * image_width + col" },
+    "pixel": {
+      "type": "object",
+      "description": "0-based pixel indices, origin at the TOP-LEFT of the image. row = y downwards, col = x to the right.",
+      "required": ["row", "col"],
+      "properties": {
+        "row": { "type": "integer", "minimum": 0 },
+        "col": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "map": {
+      "type": ["object", "null"],
+      "description": "Map coordinates of the pixel CENTRE in the image CRS. null if the image is not georeferenced.",
+      "required": ["x", "y", "crs"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "crs": { "type": "string" }
+      }
+    },
+    "class": {
+      "type": "object",
+      "required": ["class_id", "name"],
+      "properties": {
+        "class_id": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string" }
+      }
+    },
+    "bands": {
+      "type": "array",
+      "description": "ORIGINAL values read from the TIFF (never display-stretched values).",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["index", "name", "value"],
+        "properties": {
+          "index": { "type": "integer", "minimum": 1 },
+          "name": { "type": "string" },
+          "value": { "type": "number" }
+        }
+      }
+    },
+    "approval_status": {
+      "enum": ["approved", "pending", "rejected", "unresolved"],
+      "description": "Only 'approved' examples may be used for training."
+    },
+    "source": { "enum": ["manual_point", "polygon", "model_suggestion", "field_observation"] },
+    "created_at": { "type": "string" },
+    "created_by": { "type": "string" },
+    "note": { "type": "string" }
+  }
+}

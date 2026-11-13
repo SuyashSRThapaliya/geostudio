@@ -1,0 +1,35 @@
+[
+  {
+    "size": "512x384",
+    "open_metadata_ms": 1,
+    "read_all_ms": 70.1,
+    "width": 512,
+    "height": 384,
+    "bands": 4,
+    "epsg": 32615,
+    "pixel_check": true,
+    "approx_memory_mb": 19
+  },
+  {
+    "size": "2048x1536",
+    "open_metadata_ms": 2.5,
+    "read_all_ms": 564.6,
+    "width": 2048,
+    "height": 1536,
+    "bands": 4,
+    "epsg": 32615,
+    "pixel_check": true,
+    "approx_memory_mb": 121
+  },
+  {
+    "size": "4096x4096",
+    "open_metadata_ms": 0.4,
+    "read_all_ms": 2917.2,
+    "width": 4096,
+    "height": 4096,
+    "bands": 4,
+    "epsg": 32615,
+    "pixel_check": true,
+    "approx_memory_mb": 596
+  }
+]

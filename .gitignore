@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+backend/data/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Experiment scratch data (regenerate with experiments/tiff_loading_experiment.py)
+experiments/_data/

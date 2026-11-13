@@ -1,0 +1,3 @@
+{ "name": "geotiff-experiment", "private": true, "type": "module",
+  "scripts": { "start": "node geotiff_experiment.mjs" },
+  "dependencies": { "geotiff": "^2.1.3" } }

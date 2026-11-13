@@ -1,0 +1,5 @@
+project_id,image_id,point_id,pixel_id,row,col,x,y,crs,class_id,class_name,Red,Green,Blue,NIR,approval_status,source
+prj_demo01,img_demo01,pt_demo01,61500,120,60,500605.0,4648795.0,EPSG:32615,1,vegetation,418,864,434,4106,approved,manual_point
+prj_demo01,img_demo01,pt_demo02,46480,90,400,504005.0,4649095.0,EPSG:32615,2,exposed_soil,2671,2175,1466,2823,approved,manual_point
+prj_demo01,img_demo01,pt_demo03,153700,300,100,501005.0,4646995.0,EPSG:32615,3,water,301,513,746,153,approved,manual_point
+prj_demo01,img_demo01,pt_demo04,164260,320,420,504205.0,4646795.0,EPSG:32615,4,roof,3379,2974,2960,3306,approved,manual_point

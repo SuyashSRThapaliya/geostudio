@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "correction_request.schema.json",
+  "title": "Correction request (Verification -> Training)",
+  "description": "Verification never edits training points directly. It sends one of these so Training can see what the model predicted, where, and why a reviewer thinks it is wrong.",
+  "type": "object",
+  "required": ["schema", "request_id", "project_id", "image_id", "location", "original_prediction", "model", "requested_action", "explanation", "created_at", "status"],
+  "properties": {
+    "schema": { "const": "correction_request/1.0" },
+    "request_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "image_id": { "type": "string" },
+    "location": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "pixel", "pixel_id"],
+          "properties": {
+            "type": { "const": "point" },
+            "pixel": { "$ref": "#/$defs/pixel" },
+            "pixel_id": { "type": "integer", "minimum": 0 },
+            "map": { "$ref": "#/$defs/map" },
+            "point_id": { "type": ["string", "null"], "description": "Set if the location is an existing training point." }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["type", "pixel_vertices"],
+          "description": "Highlighted area. Vertices are [row, col] in pixel space, closed ring not required.",
+          "properties": {
+            "type": { "const": "polygon" },
+            "pixel_vertices": {
+              "type": "array", "minItems": 3,
+              "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+            },
+            "map_vertices": {
+              "type": "array",
+              "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 }
+            },
+            "crs": { "type": "string" }
+          }
+        }
+      ]
+    },
+    "original_prediction": {
+      "type": "object",
+      "required": ["class_id", "class_name"],
+      "properties": {
+        "class_id": { "type": "integer", "minimum": 1 },
+        "class_name": { "type": "string" },
+        "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "null when the model gives no confidence. Never invent one." }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": ["model_id", "model_version"],
+      "properties": {
+        "model_id": { "type": "string" },
+        "model_version": { "type": "string" },
+        "trained_at": { "type": "string" }
+      }
+    },
+    "requested_action": {
+      "enum": ["relabel", "add_points", "remove_points"],
+      "description": "relabel = the class is wrong; add_points = Training needs more examples here; remove_points = existing examples here are bad."
+    },
+    "suggested_class": {
+      "type": ["object", "null"],
+      "properties": {
+        "class_id": { "type": "integer", "minimum": 1 },
+        "class_name": { "type": "string" }
+      }
+    },
+    "explanation": { "type": "string", "minLength": 3 },
+    "created_by": { "type": "string" },
+    "created_at": { "type": "string" },
+    "status": { "enum": ["open", "accepted", "dismissed"] }
+  },
+  "$defs": {
+    "pixel": {
+      "type": "object", "required": ["row", "col"],
+      "properties": { "row": { "type": "integer", "minimum": 0 }, "col": { "type": "integer", "minimum": 0 } }
+    },
+    "map": {
+      "type": ["object", "null"], "required": ["x", "y", "crs"],
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" }, "crs": { "type": "string" } }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "training_set.schema.json",
+  "title": "Training set (Training -> Model / Learning & Tools)",
+  "description": "A batch of labeled training examples for one image. Every example refers to the same image, pixel convention and class dictionary so Training, Model and Verification all mean the same location and class.",
+  "type": "object",
+  "required": ["schema", "project_id", "image", "classes", "examples"],
+  "properties": {
+    "schema": { "const": "training_set/1.0" },
+    "project_id": { "type": "string" },
+    "exported_at": { "type": "string", "format": "date-time" },
+    "image": {
+      "type": "object",
+      "required": ["image_id", "width", "height", "bands"],
+      "properties": {
+        "image_id": { "type": "string" },
+        "filename": { "type": "string" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "crs": { "type": ["string", "null"], "description": "e.g. EPSG:32615. null if the image is not georeferenced." },
+        "transform": {
+          "type": ["array", "null"], "items": { "type": "number" }, "minItems": 6, "maxItems": 6,
+          "description": "Affine [a, b, c, d, e, f]: x = a*col + b*row + c ; y = d*col + e*row + f (pixel corner)."
+        },
+        "bands": { "type": "array", "items": { "$ref": "#/$defs/band_info" } }
+      }
+    },
+    "classes": {
+      "type": "array",
+      "description": "Class dictionary. class_id is the numeric label the model trains on.",
+      "items": {
+        "type": "object",
+        "required": ["class_id", "name"],
+        "properties": {
+          "class_id": { "type": "integer", "minimum": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "color": { "type": "string" }
+        }
+      }
+    },
+    "examples": { "type": "array", "items": { "$ref": "training_example.schema.json" } }
+  },
+  "$defs": {
+    "band_info": {
+      "type": "object",
+      "required": ["index", "name"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 1, "description": "1-based band number in the TIFF" },
+        "name": { "type": "string" }
+      }
+    }
+  }
+}

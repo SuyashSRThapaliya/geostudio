@@ -1,0 +1,8 @@
+flask>=3.0,<4
+rasterio>=1.4,<2
+numpy>=1.26
+pillow>=10
+jsonschema>=4.21
+pytest>=8
+# only needed for the platform experiment
+tifffile>=2024.1
