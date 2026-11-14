@@ -4,6 +4,10 @@
 backend that reads GeoTIFFs with **rasterio**. Docker packaging is planned for Sprint 3
 (see the last section).
 
+> **Update (Sprint 3 build):** the React site is now built once (`frontend/dist`, committed to the
+> repository) and served by Flask itself, so running the app needs only Python and one command
+> (`python run.py`, port 8000). Node.js is needed only by people who change the frontend.
+
 ## What the platform must support (from our user stories and Sprint 1 features)
 
 | # | Requirement | Source |

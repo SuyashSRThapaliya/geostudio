@@ -136,3 +136,33 @@ def pixel_values(path: Path, row: int, col: int) -> dict:
             x, y = ds.xy(row, col, offset="center")
             result["map"] = {"x": x, "y": y, "crs": ds.crs.to_string()}
         return result
+
+
+def band_names(path: Path) -> list[str]:
+    with rasterio.open(path) as ds:
+        return [_guess_band_name(i, ds.count, ds.descriptions[i]) for i in range(ds.count)]
+
+
+def read_pixels(path: Path, rows: np.ndarray, cols: np.ndarray, strip: int = 1024) -> np.ndarray:
+    """Original values for many pixels: array of shape (n_pixels, n_bands).
+
+    Only the labeled region is read (strip by strip), never the whole image.
+    """
+    rows = np.asarray(rows, dtype=np.int64)
+    cols = np.asarray(cols, dtype=np.int64)
+    with rasterio.open(path) as ds:
+        out = np.zeros((rows.size, ds.count), dtype=ds.dtypes[0])
+        if rows.size == 0:
+            return out
+        order = np.argsort(rows, kind="stable")
+        start = 0
+        while start < order.size:
+            r0 = rows[order[start]]
+            end = np.searchsorted(rows[order], r0 + strip, side="left")
+            idx = order[start:end]
+            r1 = rows[idx].max() + 1
+            c0, c1 = cols[idx].min(), cols[idx].max() + 1
+            block = ds.read(window=rasterio.windows.Window(int(c0), int(r0), int(c1 - c0), int(r1 - r0)))
+            out[idx] = block[:, rows[idx] - r0, cols[idx] - c0].T
+            start = end
+        return out

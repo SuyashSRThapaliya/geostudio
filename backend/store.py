@@ -1,19 +1,33 @@
-"""Project storage: classes, labeled points and the undo history.
+"""Project storage: projects, images, the label tree, annotations and undo/redo.
 
-Projects are saved as one JSON file each (backend/data/projects/<project_id>.json).
-That is deliberately simple for Sprint 2; it can be swapped for SQLite/Postgres
-later without changing the API.
+Each project is a folder:  data/<project_id>/project.json
+                           data/<project_id>/images/<image_id>.tif
+                           data/<project_id>/models/<version>.joblib
+                           data/<project_id>/predictions/<image_id>.npz
 """
 from __future__ import annotations
 
 import json
+import shutil
 import threading
 import uuid
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
-DEFAULT_COLORS = ["#2e9e44", "#b5651d", "#1f6feb", "#c9302c", "#8e44ad", "#d4a017", "#16a2b8", "#e84393"]
-SCHEMA_VERSION = "1.0"
+DEFAULT_COLORS = ["#2e9e44", "#b5651d", "#1f6feb", "#c9302c", "#8e44ad", "#d4a017", "#16a2b8", "#e84393",
+                  "#7cb342", "#5d4037", "#00897b", "#f4511e"]
+SCHEMA_VERSION = "2.0"
+MAX_HISTORY = 200
+STATUSES = {"approved", "pending", "rejected", "unresolved"}
+
+
+class NotFound(Exception):
+    pass
+
+
+class Invalid(Exception):
+    pass
 
 
 def now() -> str:
@@ -24,131 +38,262 @@ def new_id(prefix: str) -> str:
     return f"{prefix}_{uuid.uuid4().hex[:10]}"
 
 
+def _safe(name: str) -> str:
+    return "".join(c for c in str(name) if c.isalnum() or c in "_-")
+
+
 class ProjectStore:
     def __init__(self, root: Path):
         self.root = Path(root)
-        (self.root / "projects").mkdir(parents=True, exist_ok=True)
-        (self.root / "images").mkdir(parents=True, exist_ok=True)
-        self._lock = threading.Lock()
+        self.root.mkdir(parents=True, exist_ok=True)
+        self._lock = threading.RLock()
+
+    # ---------- paths ----------
+    def dir(self, pid: str) -> Path:
+        return self.root / _safe(pid)
+
+    def image_path(self, pid: str, iid: str) -> Path:
+        return self.dir(pid) / "images" / f"{_safe(iid)}.tif"
+
+    def model_path(self, pid: str, version: str) -> Path:
+        return self.dir(pid) / "models" / f"{_safe(version)}.joblib"
+
+    def prediction_path(self, pid: str, iid: str) -> Path:
+        return self.dir(pid) / "predictions" / f"{_safe(iid)}.npz"
 
     # ---------- persistence ----------
-    def _path(self, project_id: str) -> Path:
-        safe = "".join(c for c in project_id if c.isalnum() or c in "_-")
-        return self.root / "projects" / f"{safe}.json"
-
-    def load(self, project_id: str) -> dict:
-        p = self._path(project_id)
-        if not p.exists():
-            raise KeyError(f"Project '{project_id}' was not found.")
-        return json.loads(p.read_text())
+    def load(self, pid: str) -> dict:
+        p = self.dir(pid) / "project.json"
+        if not pid or not p.exists():
+            raise NotFound(f"Project '{pid}' was not found.")
+        return json.loads(p.read_text(encoding="utf-8"))
 
     def save(self, project: dict) -> None:
         project["updated_at"] = now()
-        self._path(project["project_id"]).write_text(json.dumps(project, indent=2))
+        d = self.dir(project["project_id"])
+        for sub in ("images", "models", "predictions"):
+            (d / sub).mkdir(parents=True, exist_ok=True)
+        tmp = d / "project.json.tmp"
+        tmp.write_text(json.dumps(project), encoding="utf-8")
+        tmp.replace(d / "project.json")
 
-    def image_path(self, image_id: str) -> Path:
-        safe = "".join(c for c in image_id if c.isalnum() or c in "_-")
-        return self.root / "images" / f"{safe}.tif"
+    @contextmanager
+    def edit(self, pid: str):
+        """Load, let the caller change, save. Nothing is saved if the caller raises."""
+        with self._lock:
+            project = self.load(pid)
+            yield project
+            self.save(project)
 
     # ---------- projects ----------
     def create_project(self, name: str) -> dict:
         project = {
             "schema_version": SCHEMA_VERSION,
             "project_id": new_id("prj"),
-            "name": name or "Untitled project",
+            "name": (name or "").strip() or "Untitled project",
             "created_at": now(),
             "updated_at": now(),
             "images": {},
-            "classes": [],
-            "points": [],
-            "history": [],
+            "labels": [],
+            "annotations": [],
+            "models": [],
+            "correction_requests": [],
+            "undo": [],
+            "redo": [],
         }
         self.save(project)
         return project
 
     def list_projects(self) -> list[dict]:
         out = []
-        for p in sorted((self.root / "projects").glob("*.json")):
-            d = json.loads(p.read_text())
-            out.append({"project_id": d["project_id"], "name": d["name"], "updated_at": d.get("updated_at")})
-        return out
+        for f in self.root.glob("*/project.json"):
+            try:
+                p = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            anns = p.get("annotations", [])
+            imgs = p.get("images", {})
+            out.append({
+                "project_id": p["project_id"], "name": p["name"],
+                "created_at": p.get("created_at"), "updated_at": p.get("updated_at"),
+                "images": len(imgs),
+                "labels": len(p.get("labels", [])),
+                "annotations": sum(a["approval_status"] == "approved" for a in anns),
+                "pending": sum(a["approval_status"] in ("pending", "unresolved") for a in anns),
+                "models": len(p.get("models", [])),
+                "verified_images": sum((i.get("verification") or {}).get("status") == "verified" for i in imgs.values()),
+                "open_requests": sum(r.get("status") == "open" for r in p.get("correction_requests", [])),
+            })
+        return sorted(out, key=lambda p: p["updated_at"] or "", reverse=True)
 
-    # ---------- images ----------
-    def add_image(self, project_id: str, image_id: str, filename: str, info: dict) -> dict:
+    def delete_project(self, pid: str) -> None:
         with self._lock:
-            project = self.load(project_id)
-            project["images"][image_id] = {"image_id": image_id, "filename": filename,
-                                           "added_at": now(), **info}
-            self.save(project)
-            return project["images"][image_id]
+            self.load(pid)
+            shutil.rmtree(self.dir(pid))
 
-    # ---------- classes ----------
-    def add_class(self, project_id: str, name: str, color: str | None = None) -> dict:
-        name = (name or "").strip()
-        if not name:
-            raise ValueError("Class name cannot be empty.")
-        with self._lock:
-            project = self.load(project_id)
-            if any(c["name"].lower() == name.lower() for c in project["classes"]):
-                raise ValueError(f"A class named '{name}' already exists.")
-            next_id = max((c["class_id"] for c in project["classes"]), default=0) + 1
-            cls = {"class_id": next_id, "name": name,
-                   "color": color or DEFAULT_COLORS[(next_id - 1) % len(DEFAULT_COLORS)]}
-            project["classes"].append(cls)
-            self.save(project)
-            return cls
 
-    # ---------- points ----------
-    def add_point(self, project_id: str, image_id: str, class_id: int, pixel: dict) -> dict:
-        with self._lock:
-            project = self.load(project_id)
-            if image_id not in project["images"]:
-                raise KeyError(f"Image '{image_id}' is not part of this project.")
-            if not any(c["class_id"] == class_id for c in project["classes"]):
-                raise ValueError("Select a class before labeling.")
-            point = {
-                "point_id": new_id("pt"),
-                "image_id": image_id,
-                "pixel_id": pixel["pixel_id"],
-                "row": pixel["row"],
-                "col": pixel["col"],
-                "map": pixel["map"],
-                "bands": pixel["bands"],
-                "class_id": class_id,
-                # A point the user placed by hand is approved; model suggestions start as "pending".
-                "approval_status": "approved",
-                "source": "manual_point",
-                "created_at": now(),
-            }
-            project["points"].append(point)
-            project["history"].append({"action": "add_point", "point": point})
-            self.save(project)
-            return point
+# =====================================================================
+# Label tree.  A label with parent_id None is a "label class" (top level).
+# Labels under it share that class for training.
+# =====================================================================
+def label_by_id(project: dict, label_id) -> dict:
+    for lab in project["labels"]:
+        if lab["label_id"] == label_id:
+            return lab
+    raise NotFound(f"Label {label_id} was not found.")
 
-    def remove_point(self, project_id: str, point_id: str) -> dict:
-        with self._lock:
-            project = self.load(project_id)
-            for i, p in enumerate(project["points"]):
-                if p["point_id"] == point_id:
-                    project["points"].pop(i)
-                    project["history"].append({"action": "remove_point", "point": p, "index": i})
-                    self.save(project)
-                    return p
-            raise KeyError(f"Point '{point_id}' was not found.")
 
-    def undo(self, project_id: str) -> dict:
-        """Reverse the most recent labeling action (add or remove a point)."""
-        with self._lock:
-            project = self.load(project_id)
-            if not project["history"]:
-                raise LookupError("There is nothing to undo.")
-            last = project["history"].pop()
-            if last["action"] == "add_point":
-                project["points"] = [p for p in project["points"] if p["point_id"] != last["point"]["point_id"]]
-                undone = f"Removed the point you just added ({last['point']['point_id']})."
-            else:  # remove_point
-                idx = min(last["index"], len(project["points"]))
-                project["points"].insert(idx, last["point"])
-                undone = f"Restored point {last['point']['point_id']}."
-            self.save(project)
-            return {"undone": last["action"], "message": undone, "points": project["points"]}
+def root_label(project: dict, label_id) -> dict:
+    lab = label_by_id(project, label_id)
+    return label_by_id(project, lab["parent_id"]) if lab["parent_id"] else lab
+
+
+def _check_name(project: dict, name: str, ignore_id=None) -> str:
+    name = (name or "").strip()
+    if not name:
+        raise Invalid("The label name cannot be empty.")
+    if any(l["name"].lower() == name.lower() and l["label_id"] != ignore_id for l in project["labels"]):
+        raise Invalid(f"A label named '{name}' already exists.")
+    return name
+
+
+def _check_parent(project: dict, parent_id, label_id=None):
+    if parent_id is None:
+        return None
+    parent = label_by_id(project, parent_id)
+    if parent["parent_id"] is not None:
+        raise Invalid("Labels can only be placed under a top-level label class.")
+    if label_id is not None:
+        if parent_id == label_id:
+            raise Invalid("A label cannot be placed under itself.")
+        if any(l["parent_id"] == label_id for l in project["labels"]):
+            raise Invalid("This label class still contains labels. Move or promote them first.")
+    return parent_id
+
+
+def add_label(project: dict, name: str, color: str | None = None, parent_id=None) -> dict:
+    name = _check_name(project, name)
+    parent_id = _check_parent(project, parent_id)
+    next_id = max((l["label_id"] for l in project["labels"]), default=0) + 1
+    lab = {"label_id": next_id, "name": name, "parent_id": parent_id,
+           "color": color or DEFAULT_COLORS[(next_id - 1) % len(DEFAULT_COLORS)]}
+    project["labels"].append(lab)
+    return lab
+
+
+def update_label(project: dict, label_id: int, changes: dict) -> dict:
+    lab = label_by_id(project, label_id)
+    if "name" in changes:
+        lab["name"] = _check_name(project, changes["name"], ignore_id=label_id)
+    if changes.get("color"):
+        lab["color"] = str(changes["color"])
+    if "parent_id" in changes:  # promote (None) or demote (id of a label class)
+        lab["parent_id"] = _check_parent(project, changes["parent_id"], label_id)
+    return lab
+
+
+def delete_label(project: dict, label_id: int, force: bool = False) -> None:
+    label_by_id(project, label_id)
+    ids = {label_id} | {l["label_id"] for l in project["labels"] if l["parent_id"] == label_id}
+    used = [a for a in project["annotations"] if a["label_id"] in ids]
+    if used and not force:
+        raise Invalid(f"{len(used)} annotation(s) use this label. Deleting it will delete them too.")
+    project["labels"] = [l for l in project["labels"] if l["label_id"] not in ids]
+    if used:
+        project["annotations"] = [a for a in project["annotations"] if a["label_id"] not in ids]
+        project["undo"], project["redo"] = [], []  # history may refer to deleted labels
+
+
+# =====================================================================
+# Annotations with undo / redo.
+# An action is {"label": text, "ops": [op, ...]} where op is one of
+#   {"op": "add", "ann": {...}}
+#   {"op": "remove", "ann": {...}, "index": i}
+#   {"op": "update", "before": {...}, "after": {...}}
+# =====================================================================
+def _find(project: dict, annotation_id: str) -> int:
+    for i, a in enumerate(project["annotations"]):
+        if a["annotation_id"] == annotation_id:
+            return i
+    raise NotFound(f"Annotation '{annotation_id}' was not found.")
+
+
+def _push(project: dict, label: str, ops: list[dict]) -> None:
+    if not ops:
+        return
+    project["undo"].append({"label": label, "ops": ops})
+    del project["undo"][:-MAX_HISTORY]
+    project["redo"] = []
+
+
+def add_annotations(project: dict, anns: list[dict], label: str) -> None:
+    project["annotations"].extend(anns)
+    _push(project, label, [{"op": "add", "ann": a} for a in anns])
+
+
+def remove_annotations(project: dict, ids: list[str], label: str | None = None) -> int:
+    ops = []
+    for aid in ids:
+        i = _find(project, aid)
+        ops.append({"op": "remove", "ann": project["annotations"].pop(i), "index": i})
+    _push(project, label or (f"Delete {len(ops)} annotations" if len(ops) != 1 else "Delete annotation"), ops)
+    return len(ops)
+
+
+def update_annotations(project: dict, ids: list[str], changes: dict, label: str) -> None:
+    if "approval_status" in changes and changes["approval_status"] not in STATUSES:
+        raise Invalid("approval_status must be approved, pending, rejected or unresolved.")
+    if "label_id" in changes:
+        label_by_id(project, changes["label_id"])
+    ops = []
+    for aid in ids:
+        i = _find(project, aid)
+        before = project["annotations"][i]
+        after = {**before, **changes}
+        if after != before:
+            project["annotations"][i] = after
+            ops.append({"op": "update", "before": before, "after": after})
+    _push(project, label, ops)
+
+
+def _apply(project: dict, op: dict, forward: bool) -> None:
+    anns = project["annotations"]
+    kind = op["op"]
+    if kind == "update":
+        src, dst = (op["before"], op["after"]) if forward else (op["after"], op["before"])
+        anns[_find(project, src["annotation_id"])] = dst
+    elif (kind == "add") == forward:  # (re)insert
+        idx = op.get("index", len(anns))
+        anns.insert(min(idx, len(anns)), op["ann"])
+    else:  # take out
+        anns.pop(_find(project, op["ann"]["annotation_id"]))
+
+
+def undo(project: dict) -> str:
+    if not project["undo"]:
+        raise Invalid("There is nothing to undo.")
+    action = project["undo"].pop()
+    for op in reversed(action["ops"]):
+        _apply(project, op, forward=False)
+    project["redo"].append(action)
+    return f"Undid: {action['label']}"
+
+
+def redo(project: dict) -> str:
+    if not project["redo"]:
+        raise Invalid("There is nothing to redo.")
+    action = project["redo"].pop()
+    for op in action["ops"]:
+        _apply(project, op, forward=True)
+    project["undo"].append(action)
+    return f"Redid: {action['label']}"
+
+
+def project_view(project: dict) -> dict:
+    """What the browser gets: everything except the raw history stacks."""
+    view = {k: v for k, v in project.items() if k not in ("undo", "redo")}
+    view["can_undo"] = bool(project["undo"])
+    view["can_redo"] = bool(project["redo"])
+    view["undo_label"] = project["undo"][-1]["label"] if project["undo"] else None
+    view["redo_label"] = project["redo"][-1]["label"] if project["redo"] else None
+    return view

@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "training_set.schema.json",
   "title": "Training set (Training -> Model / Learning & Tools)",
-  "description": "A batch of labeled training examples for one image. Every example refers to the same image, pixel convention and class dictionary so Training, Model and Verification all mean the same location and class.",
+  "description": "A batch of labeled training examples for one image. Lines and polygons are already split into individual pixels: one example per pixel.",
   "type": "object",
   "required": ["schema", "project_id", "image", "classes", "examples"],
   "properties": {
     "schema": { "const": "training_set/1.0" },
     "project_id": { "type": "string" },
-    "exported_at": { "type": "string", "format": "date-time" },
+    "exported_at": { "type": "string" },
     "image": {
       "type": "object",
       "required": ["image_id", "width", "height", "bands"],
@@ -22,32 +22,41 @@
           "type": ["array", "null"], "items": { "type": "number" }, "minItems": 6, "maxItems": 6,
           "description": "Affine [a, b, c, d, e, f]: x = a*col + b*row + c ; y = d*col + e*row + f (pixel corner)."
         },
-        "bands": { "type": "array", "items": { "$ref": "#/$defs/band_info" } }
+        "bands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["index", "name"],
+            "properties": {
+              "index": { "type": "integer", "minimum": 1, "description": "1-based band number in the TIFF" },
+              "name": { "type": "string" }
+            }
+          }
+        }
       }
     },
     "classes": {
       "type": "array",
-      "description": "Class dictionary. class_id is the numeric label the model trains on.",
+      "description": "Label dictionary. Entries with parent_id null are label classes; the others are labels inside a class.",
       "items": {
         "type": "object",
         "required": ["class_id", "name"],
         "properties": {
           "class_id": { "type": "integer", "minimum": 1 },
           "name": { "type": "string", "minLength": 1 },
-          "color": { "type": "string" }
+          "color": { "type": "string" },
+          "parent_id": { "type": ["integer", "null"] }
         }
       }
     },
-    "examples": { "type": "array", "items": { "$ref": "training_example.schema.json" } }
-  },
-  "$defs": {
-    "band_info": {
+    "summary": {
       "type": "object",
-      "required": ["index", "name"],
+      "description": "Counts so the receiver can check nothing was lost.",
       "properties": {
-        "index": { "type": "integer", "minimum": 1, "description": "1-based band number in the TIFF" },
-        "name": { "type": "string" }
+        "examples": { "type": "integer" },
+        "conflicting_pixels_excluded": { "type": "integer", "description": "Pixels labeled with two different classes are left out." }
       }
-    }
+    },
+    "examples": { "type": "array", "items": { "$ref": "training_example.schema.json" } }
   }
 }

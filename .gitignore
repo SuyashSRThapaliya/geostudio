@@ -3,11 +3,13 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+
+# Projects, images and models created while using the app
 backend/data/
 
-# Node
+# Node (only needed by people changing the frontend). frontend/dist IS committed
+# so that the app runs with Python alone.
 node_modules/
-frontend/dist/
 
 # Experiment scratch data (regenerate with experiments/tiff_loading_experiment.py)
 experiments/_data/

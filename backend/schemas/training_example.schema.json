@@ -8,7 +8,8 @@
     "schema": { "const": "training_example/1.0" },
     "project_id": { "type": "string" },
     "image_id": { "type": "string" },
-    "point_id": { "type": "string", "description": "Unique per labeled point; stable across exports so corrections can refer back to it." },
+    "point_id": { "type": "string", "description": "Unique per labeled pixel. For a point it is the annotation id; for a pixel inside a line or polygon it is '<annotation_id>:<pixel_id>'." },
+    "annotation_id": { "type": "string", "description": "The point, line or polygon the user drew that produced this pixel." },
     "pixel_id": { "type": "integer", "minimum": 0, "description": "row * image_width + col" },
     "pixel": {
       "type": "object",
@@ -31,9 +32,19 @@
     },
     "class": {
       "type": "object",
+      "description": "The label class (top level of the label tree). This is what the model trains on by default.",
       "required": ["class_id", "name"],
       "properties": {
         "class_id": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string" }
+      }
+    },
+    "label": {
+      "type": "object",
+      "description": "The exact label the user chose. Same as 'class' unless the label sits under a label class (e.g. class vegetation, label grass).",
+      "required": ["label_id", "name"],
+      "properties": {
+        "label_id": { "type": "integer", "minimum": 1 },
         "name": { "type": "string" }
       }
     },
@@ -55,7 +66,7 @@
       "enum": ["approved", "pending", "rejected", "unresolved"],
       "description": "Only 'approved' examples may be used for training."
     },
-    "source": { "enum": ["manual_point", "polygon", "model_suggestion", "field_observation"] },
+    "source": { "enum": ["manual_point", "line", "polygon", "model_suggestion", "field_observation"] },
     "created_at": { "type": "string" },
     "created_by": { "type": "string" },
     "note": { "type": "string" }

@@ -1,7 +1,7 @@
 {
   "schema": "training_set/1.0",
   "project_id": "prj_demo01",
-  "exported_at": "2026-11-13T18:00:00+00:00",
+  "exported_at": "2026-11-14T18:00:00+00:00",
   "image": {
     "image_id": "img_demo01",
     "filename": "sample_4band.tif",
@@ -39,76 +39,39 @@
     {
       "class_id": 1,
       "name": "vegetation",
-      "color": "#2e9e44"
+      "color": "#2e9e44",
+      "parent_id": null
     },
     {
       "class_id": 2,
       "name": "exposed_soil",
-      "color": "#b5651d"
+      "color": "#b5651d",
+      "parent_id": null
     },
     {
       "class_id": 3,
       "name": "water",
-      "color": "#1f6feb"
+      "color": "#1f6feb",
+      "parent_id": null
     },
     {
       "class_id": 4,
-      "name": "roof",
-      "color": "#c9302c"
+      "name": "grass",
+      "color": "#c9302c",
+      "parent_id": 1
     }
   ],
+  "summary": {
+    "examples": 12,
+    "conflicting_pixels_excluded": 0
+  },
   "examples": [
     {
       "schema": "training_example/1.0",
       "project_id": "prj_demo01",
       "image_id": "img_demo01",
-      "point_id": "pt_demo01",
-      "pixel_id": 61500,
-      "pixel": {
-        "row": 120,
-        "col": 60
-      },
-      "map": {
-        "x": 500605.0,
-        "y": 4648795.0,
-        "crs": "EPSG:32615"
-      },
-      "class": {
-        "class_id": 1,
-        "name": "vegetation"
-      },
-      "bands": [
-        {
-          "index": 1,
-          "name": "Red",
-          "value": 418
-        },
-        {
-          "index": 2,
-          "name": "Green",
-          "value": 864
-        },
-        {
-          "index": 3,
-          "name": "Blue",
-          "value": 434
-        },
-        {
-          "index": 4,
-          "name": "NIR",
-          "value": 4106
-        }
-      ],
-      "approval_status": "approved",
-      "source": "manual_point",
-      "created_at": "2026-11-13T17:51:00+00:00",
-      "created_by": "lumu"
-    },
-    {
-      "schema": "training_example/1.0",
-      "project_id": "prj_demo01",
-      "image_id": "img_demo01",
-      "point_id": "pt_demo02",
+      "point_id": "pt_demo04",
+      "annotation_id": "pt_demo04",
       "pixel_id": 46480,
       "pixel": {
         "row": 90,
@@ -121,6 +84,10 @@
       },
       "class": {
         "class_id": 2,
+        "name": "exposed_soil"
+      },
+      "label": {
+        "label_id": 2,
         "name": "exposed_soil"
       },
       "bands": [
@@ -147,14 +114,364 @@
       ],
       "approval_status": "approved",
       "source": "manual_point",
-      "created_at": "2026-11-13T17:52:00+00:00",
-      "created_by": "lumu"
+      "created_at": "2026-11-14T17:50:00+00:00"
     },
     {
       "schema": "training_example/1.0",
       "project_id": "prj_demo01",
       "image_id": "img_demo01",
       "point_id": "pt_demo03",
+      "annotation_id": "pt_demo03",
+      "pixel_id": 61500,
+      "pixel": {
+        "row": 120,
+        "col": 60
+      },
+      "map": {
+        "x": 500605.0,
+        "y": 4648795.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 1,
+        "name": "vegetation"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 418
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 864
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 434
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4106
+        }
+      ],
+      "approval_status": "approved",
+      "source": "manual_point",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:76830",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 76830,
+      "pixel": {
+        "row": 150,
+        "col": 30
+      },
+      "map": {
+        "x": 500305.0,
+        "y": 4648495.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 412
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 841
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 523
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4418
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:76831",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 76831,
+      "pixel": {
+        "row": 150,
+        "col": 31
+      },
+      "map": {
+        "x": 500315.0,
+        "y": 4648495.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 396
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 960
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 530
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4191
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:76832",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 76832,
+      "pixel": {
+        "row": 150,
+        "col": 32
+      },
+      "map": {
+        "x": 500325.0,
+        "y": 4648495.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 382
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 859
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 452
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4494
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:77342",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 77342,
+      "pixel": {
+        "row": 151,
+        "col": 30
+      },
+      "map": {
+        "x": 500305.0,
+        "y": 4648485.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 388
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 841
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 529
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4208
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:77343",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 77343,
+      "pixel": {
+        "row": 151,
+        "col": 31
+      },
+      "map": {
+        "x": 500315.0,
+        "y": 4648485.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 393
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 874
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 519
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4317
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "pg_demo02:77344",
+      "annotation_id": "pg_demo02",
+      "pixel_id": 77344,
+      "pixel": {
+        "row": 151,
+        "col": 32
+      },
+      "map": {
+        "x": 500325.0,
+        "y": 4648485.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 1,
+        "name": "vegetation"
+      },
+      "label": {
+        "label_id": 4,
+        "name": "grass"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 425
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 924
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 512
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 4480
+        }
+      ],
+      "approval_status": "approved",
+      "source": "polygon",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "ln_demo01:153700",
+      "annotation_id": "ln_demo01",
       "pixel_id": 153700,
       "pixel": {
         "row": 300,
@@ -167,6 +484,10 @@
       },
       "class": {
         "class_id": 3,
+        "name": "water"
+      },
+      "label": {
+        "label_id": 3,
         "name": "water"
       },
       "bands": [
@@ -192,55 +513,158 @@
         }
       ],
       "approval_status": "approved",
-      "source": "manual_point",
-      "created_at": "2026-11-13T17:53:00+00:00",
-      "created_by": "lumu"
+      "source": "line",
+      "created_at": "2026-11-14T17:50:00+00:00"
     },
     {
       "schema": "training_example/1.0",
       "project_id": "prj_demo01",
       "image_id": "img_demo01",
-      "point_id": "pt_demo04",
-      "pixel_id": 164260,
+      "point_id": "ln_demo01:153701",
+      "annotation_id": "ln_demo01",
+      "pixel_id": 153701,
       "pixel": {
-        "row": 320,
-        "col": 420
+        "row": 300,
+        "col": 101
       },
       "map": {
-        "x": 504205.0,
-        "y": 4646795.0,
+        "x": 501015.0,
+        "y": 4646995.0,
         "crs": "EPSG:32615"
       },
       "class": {
-        "class_id": 4,
-        "name": "roof"
+        "class_id": 3,
+        "name": "water"
+      },
+      "label": {
+        "label_id": 3,
+        "name": "water"
       },
       "bands": [
         {
           "index": 1,
           "name": "Red",
-          "value": 3379
+          "value": 340
         },
         {
           "index": 2,
           "name": "Green",
-          "value": 2974
+          "value": 477
         },
         {
           "index": 3,
           "name": "Blue",
-          "value": 2960
+          "value": 799
         },
         {
           "index": 4,
           "name": "NIR",
-          "value": 3306
+          "value": 136
         }
       ],
       "approval_status": "approved",
-      "source": "manual_point",
-      "created_at": "2026-11-13T17:54:00+00:00",
-      "created_by": "lumu"
+      "source": "line",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "ln_demo01:153702",
+      "annotation_id": "ln_demo01",
+      "pixel_id": 153702,
+      "pixel": {
+        "row": 300,
+        "col": 102
+      },
+      "map": {
+        "x": 501025.0,
+        "y": 4646995.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 3,
+        "name": "water"
+      },
+      "label": {
+        "label_id": 3,
+        "name": "water"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 314
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 528
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 803
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 141
+        }
+      ],
+      "approval_status": "approved",
+      "source": "line",
+      "created_at": "2026-11-14T17:50:00+00:00"
+    },
+    {
+      "schema": "training_example/1.0",
+      "project_id": "prj_demo01",
+      "image_id": "img_demo01",
+      "point_id": "ln_demo01:153703",
+      "annotation_id": "ln_demo01",
+      "pixel_id": 153703,
+      "pixel": {
+        "row": 300,
+        "col": 103
+      },
+      "map": {
+        "x": 501035.0,
+        "y": 4646995.0,
+        "crs": "EPSG:32615"
+      },
+      "class": {
+        "class_id": 3,
+        "name": "water"
+      },
+      "label": {
+        "label_id": 3,
+        "name": "water"
+      },
+      "bands": [
+        {
+          "index": 1,
+          "name": "Red",
+          "value": 322
+        },
+        {
+          "index": 2,
+          "name": "Green",
+          "value": 492
+        },
+        {
+          "index": 3,
+          "name": "Blue",
+          "value": 814
+        },
+        {
+          "index": 4,
+          "name": "NIR",
+          "value": 149
+        }
+      ],
+      "approval_status": "approved",
+      "source": "line",
+      "created_at": "2026-11-14T17:50:00+00:00"
     }
   ]
 }

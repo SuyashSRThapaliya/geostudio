@@ -13,7 +13,7 @@ flowchart TB
         direction LR
         T1[Create / open project] --> T2[Import GeoTIFF]
         T2 --> T3[Create classes]
-        T3 --> T4[Label points / polygons]
+        T3 --> T4[Label points / lines / polygons]
         T4 --> T5[Export training set<br/>approved examples only]
         T6[Review correction requests] --> T4
     end
@@ -123,22 +123,28 @@ flowchart TB
 ```mermaid
 flowchart TB
     subgraph Browser
-        UI[React app<br/>ClassPanel · ImageViewer canvas · PointList]
+        UI[React app<br/>Project screen · Viewer canvas · Label tree<br/>Model tab · Verification mode]
     end
-    subgraph Backend[Flask backend :5000]
-        API[REST API app.py]
-        TS[tiff_service.py<br/>rasterio]
-        ST[store.py<br/>projects + undo]
-        REC[records.py<br/>JSON Schemas]
+    subgraph Backend[Flask on 127.0.0.1:8000 - python run.py]
+        API[app.py<br/>REST API + serves the built site]
+        TS[tiff_service.py<br/>rasterio: info, preview, pixel values]
+        ST[store.py<br/>projects, label tree, undo / redo]
+        LP[label_processing.py<br/>points, lines, polygons to pixels<br/>training set JSON / CSV, schemas]
+        ML[ml.py<br/>random forest: train, predict, suggest]
+        VER[verification.py<br/>correction requests]
     end
-    subgraph Storage[backend/data]
+    subgraph Storage[backend/data/project_id/]
+        PRJ[(project.json)]
         IMG[(images/*.tif)]
-        PRJ[(projects/*.json)]
+        MOD[(models/*.joblib<br/>predictions/*.npz)]
     end
-    UI -- /api via Vite proxy :5173 --> API
+    UI -- /api --> API
     API --> TS --> IMG
     API --> ST --> PRJ
-    API --> REC
-    API -- training_set --> MODEL[Model service]
-    VER[Verification service] -- correction_request --> API
+    API --> LP --> TS
+    API --> ML --> MOD
+    ML --> LP
+    API --> VER --> ML
+    LP -- training_set --> EXT1[Model group's own service]
+    EXT2[Verification group's own service] -- correction_request --> API
 ```

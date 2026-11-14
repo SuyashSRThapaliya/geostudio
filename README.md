@@ -1,117 +1,151 @@
 # Training Selection Tool
 
-The Training Selection part of the satellite-image classification project. Users open a
-GeoTIFF, create classes and label pixels. The labeled examples are exported in the format
-agreed with the **Model / Learning & Tools** and **Verification** groups.
+A web app for labeling satellite images. You open a GeoTIFF, create labels, and mark pixels with
+points, lines and polygons. The labeled pixels are exported in the format agreed with the
+**Model / Learning & Tools** and **Verification** groups. A simple built-in model and a
+Verification mode are included so the whole loop can be tried end to end.
 
-**Stack:** React (Vite) frontend · Flask + rasterio backend. The reasons are in
-[`docs/platform_decision.md`](docs/platform_decision.md).
+**Stack:** Flask + rasterio + scikit-learn (Python) backend, React frontend served by Flask.
 
-![Training tool](docs/img/app_true_colour.png)
+![Training workspace](docs/img/app_training.png)
 
-## What works (Sprint 2)
+## Start the app
 
-- **Open a GeoTIFF:** see its size, bands, data type, CRS and pixel size. Unsupported or broken files get a clear message.
-- **Navigate:** fit to window, zoom with the scroll wheel or + / − (pixels get bigger, with no blurring), drag to pan, and a 1:1 view.
-- **Choose display bands:** true colour, false colour (NIR), or any band on each R/G/B channel. This changes the display only.
-- **Classes:** create a class with a name and colour, select it (keys 1–9), and show or hide it. Each class shows its point count.
-- **Point labeling:** click a pixel to label it. The backend reads the **original** band values for that row/col.
-- **Fix mistakes:** remove a point (✕ or the Delete key) and undo the last labeling action (Ctrl/Cmd + Z).
-- **Export:** a JSON training set or a CSV for pandas (see [`docs/data_exchange.md`](docs/data_exchange.md)).
-- **Correction requests from Verification:** accepted at `POST /api/projects/<pid>/correction-requests` and checked against the schema.
+You need **Python 3.10 or newer** (python.org; on Windows tick "Add Python to PATH").
+Node.js is **not** needed to run the app.
 
-## Install
+| System | What to do |
+|---|---|
+| **Windows** | Double-click **`start.bat`** |
+| **Mac / Linux** | In a terminal, inside this folder: **`./start.sh`** |
 
-You need **Python 3.10+** and **Node.js 18+**.
+The first start installs the Python packages (a few minutes). After that it opens
+**http://127.0.0.1:8000** in your browser. Keep the terminal window open while you use the app,
+and press **Ctrl+C** in it to stop.
+
+Doing it by hand instead of using the start script:
 
 ```bash
-git clone <repo-url> training-tool
-cd training-tool
-
-# backend
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r backend/requirements.txt
+python run.py                        # options: --port 9000   --no-browser
+```
 
-# frontend
+### If something goes wrong
+
+- **"Some Python packages are not installed"**: run the `pip install` line that the message shows.
+- **rasterio fails to install**: run `python -m pip install --upgrade pip` and try again. If it
+  still fails, your Python may be too new for a ready-made rasterio package; install Python 3.12.
+- **The page does not open**: type `http://127.0.0.1:8000` into the browser yourself. If port 8000
+  is taken, the app picks the next free one and prints the address in the terminal.
+- **"Cannot reach the app server"** in the page: the terminal window was closed. Start the app again.
+
+## Try it in five minutes
+
+1. **Create project** on the first screen.
+2. **Import a GeoTIFF**: choose `sample_data/sample_4band.tif` (512 × 384 px; Red, Green, Blue, NIR).
+3. In **Labels**, click **＋ Add** and create `vegetation`, `exposed_soil`, `water`, `roof`.
+   Hover a label and click **＋** to add a label inside it (for example `grass` inside `vegetation`).
+4. Pick a label, pick the **polygon** tool (G) and click around an area; double-click to finish.
+   Draw at least two shapes for each label. Points (P) and lines (L) work the same way.
+5. Open the **Model** tab: **Train model**, then **Run v1 on …**. The prediction appears on the image.
+6. Click **Suggest**. The model proposes labels (dashed diamonds). Press **N** to step through
+   them and **A** / **R** / **U** to approve, reject or postpone. Only approved ones become training data.
+7. Switch to **Verification** (top right). Click pixels to see the prediction, and use the flag
+   tools to report a mistake. Back in **Training**, the report is in the **Requests** tab.
+8. **File → Export training set** gives the JSON or CSV for the Model group.
+
+**Pixel-accuracy check:** in the sample's top-left 16 × 16 pixels, the Blue band stores
+`row*100 + col`. Label the pixel at row 3, col 4 and the details should show **B3 Blue = 304**.
+
+## What it does
+
+**Project screen**
+- Create, open, rename, delete, search, export (.zip) and import projects. Each row shows a progress status.
+- Everything is saved automatically after every change.
+
+**Images**
+- Import GeoTIFFs (.tif / .tiff); several per project. Size, bands, data type and CRS are shown.
+- Unsupported or damaged files get a clear message.
+- Choose which band is shown as R, G and B; true colour and false colour (NIR) presets.
+- Brightness and contrast change the display only, never the data.
+
+**Viewing**
+- Scroll to zoom (pixels get bigger, no blurring), drag to move, Fit, 1:1.
+- Zoom-to-region tool (Z): drag a box with the same shape as the window.
+- Magnifier (M) that follows the cursor and outlines the exact pixel a click would label.
+- Overview map, pixel grid, and a status bar with row/col, pixel ID, map coordinates and scale.
+- Very large images are displayed at reduced size, but clicks and band values always use the original pixels.
+
+**Labels**
+- Label classes with labels inside them; add, rename, recolour, delete, promote and demote.
+- Checkboxes show or hide labels; a class checkbox controls everything inside it.
+- Label opacity slider.
+
+**Labeling tools**
+- Points, lines and polygons. Select, relabel, add a note, delete.
+- Undo and redo (Ctrl+Z / Ctrl+Y) for drawing, deleting, relabeling and reviews.
+
+**Label processing** (`backend/label_processing.py`)
+- Lines and polygons are split into individual pixels.
+- Only the labeled pixels' band values are read from the TIFF.
+- A pixel labeled with two different classes is left out of the export and counted.
+- Export as JSON (checked against `backend/schemas/`) or CSV for pandas.
+
+**Model** (`backend/ml.py`, a stand-in for the Model group's engine)
+- Random forest on the band values plus NDVI; trains on label classes or individual labels.
+- Every training run is a new version; accuracy and a confusion matrix are shown for each.
+- Refuses an image that lacks a band the model needs, and says which one.
+- Prediction overlay with opacity, and model-suggested labels to approve, correct, reject or postpone.
+
+**Verification**
+- Compare the prediction with the image, inspect single pixels, focus on chosen classes.
+- Flag a pixel or an area as wrong class / add points / remove points, with an explanation.
+- Requests reach Training as `correction_request/1.0` records. Verification never edits labels.
+- Mark an image as verified.
+
+## Things to know
+
+- The accuracy shown is measured on your own labeled pixels, not on independent data, so it is optimistic.
+- Predicting is slow on very large images (every pixel is classified); the sample takes about a second.
+- Exported project zips contain the images, labels and requests, but not trained models. Retrain after importing.
+- There are no user accounts; the app is meant to run on your own computer.
+
+## For developers
+
+```bash
+python -m pytest -q backend/tests        # 17 backend tests
+python docs/examples/make_training_set_example.py   # regenerate the shared examples
+```
+
+Changing the frontend needs **Node.js 18+**:
+
+```bash
 cd frontend
 npm install
-cd ..
+npm run dev        # http://localhost:5173 with live reload; run `python run.py` in another terminal
+npm run build      # rebuilds frontend/dist, which Flask serves. Commit the result.
 ```
 
-> **Windows and rasterio:** `pip install rasterio` installs a pre-built wheel on Python 3.10–3.13.
-> If it fails, upgrade pip first with `python -m pip install --upgrade pip`, or use conda:
-> `conda install -c conda-forge rasterio`.
-
-## Run (development)
-
-Use two terminals:
-
-```bash
-# terminal 1 – backend on http://localhost:5000
-source .venv/bin/activate
-python backend/app.py
-
-# terminal 2 – frontend on http://localhost:5173 (forwards /api to Flask)
-cd frontend
-npm run dev
+```
+run.py, start.bat, start.sh   one-command start
+backend/app.py                Flask routes
+backend/store.py              projects, label tree, annotations, undo / redo
+backend/tiff_service.py       GeoTIFF info, display preview, exact pixel values
+backend/label_processing.py   shapes to pixels, training-set export, schema checks
+backend/ml.py                 train, predict, suggest
+backend/verification.py       correction requests
+backend/schemas/              JSON Schemas of the shared records
+frontend/src/                 React app (ProjectScreen, Workspace, Viewer, LabelTree, Panels)
+frontend/dist/                built site (committed)
+sample_data/                  sample GeoTIFF + generator
+docs/                         data exchange spec, flowcharts, platform decision, examples
+experiments/                  Sprint 2 image-loading experiment
 ```
 
-Then open **http://localhost:5173**, click **Open TIFF…** and choose `sample_data/sample_4band.tif`.
-
-To run everything on one port instead, build the frontend with `cd frontend && npm run build`,
-then run `python backend/app.py` and open http://localhost:5000.
-
-## Sample data
-
-`sample_data/sample_4band.tif` is the agreed test image: 512 × 384 px, bands Red, Green, Blue
-and NIR (uint16), UTM 15N, 10 m pixels. It has four regions (vegetation, exposed soil, water,
-roof). To regenerate it or make a bigger one:
-
-```bash
-python sample_data/make_sample_tiff.py                       # default
-python sample_data/make_sample_tiff.py big.tif 4096 4096     # custom size
-```
-
-**Pixel-accuracy check:** in the top-left 16 × 16 block, the Blue band stores `row*100 + col`.
-For example, if you click the pixel at row 3, col 4, the details panel should show **B3 Blue = 304**.
-
-## Tests
-
-```bash
-python -m pytest -q backend/tests
-```
-
-The tests cover upload, the unsupported/corrupt file messages, exact pixel lookup
-(including map coordinates), classes, adding and removing points, undo, export validity
-and the shared example files.
-
-## API
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/health` | Health check |
-| GET / POST | `/api/projects` | List / create projects |
-| GET | `/api/projects/<pid>` | Project with images, classes, points |
-| POST | `/api/projects/<pid>/images` | Upload a TIFF (multipart `file`) |
-| GET | `/api/images/<iid>/preview.png?bands=1,2,3` | Display image (8-bit, display only) |
-| GET | `/api/images/<iid>/pixel?row=&col=` | Original band values + map coordinates |
-| POST | `/api/projects/<pid>/classes` | `{name, color?}` |
-| POST | `/api/projects/<pid>/points` | `{image_id, class_id, row, col}` |
-| DELETE | `/api/projects/<pid>/points/<point_id>` | Remove a point |
-| POST | `/api/projects/<pid>/undo` | Undo the last add/remove |
-| GET | `/api/projects/<pid>/images/<iid>/training-set[?format=csv&approved_only=1]` | Export |
-| POST | `/api/projects/<pid>/correction-requests` | Receive feedback from Verification |
-
-## Repository layout
-
-```
-backend/        Flask API, TIFF reading, project storage, JSON Schemas, tests
-frontend/       React app (Vite)
-sample_data/    sample GeoTIFF + generator
-experiments/    Sprint 2 image-loading experiment (Python + geotiff.js) and RESULTS.md
-docs/           platform decision, data exchange spec, flowcharts (+ PNGs), examples
-```
+More: [`docs/data_exchange.md`](docs/data_exchange.md) ·
+[`docs/flowcharts.md`](docs/flowcharts.md) · [`docs/platform_decision.md`](docs/platform_decision.md)
 
 ## Team
 
@@ -120,6 +154,3 @@ docs/           platform decision, data exchange spec, flowcharts (+ PNGs), exam
 | Ari | @a2d1t |
 | Lumu | elummoum5104 |
 | Suyash | thegodfather4392 |
-
-**Suggested split** (from the Sprint 2 plan): GUI frontend (`frontend/`), backend (`backend/app.py`,
-`tiff_service.py`, `store.py`), and label processing / data exchange (`records.py`, `schemas/`, `docs/data_exchange.md`).
