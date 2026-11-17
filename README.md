@@ -147,11 +147,5 @@ experiments/                  Sprint 2 image-loading experiment
 More: [`docs/data_exchange.md`](docs/data_exchange.md) ·
 [`docs/flowcharts.md`](docs/flowcharts.md) · [`docs/platform_decision.md`](docs/platform_decision.md)
 
-## Team
 
-| | Discord |
-|---|---|
-| Ari | @a2d1t |
-| Lumu | elummoum5104 |
-| Suyash | thegodfather4392 |
 # geostudio
